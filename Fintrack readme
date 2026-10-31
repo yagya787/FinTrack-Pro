@@ -1,0 +1,91 @@
+# 💳 FinTrack Pro
+
+A personal finance tracker with a modern fintech-style interface and a built-in AI finance assistant.
+It is a **single HTML file** with no installation, no server and no libraries: open it in a browser and it works.
+
+## Features
+
+- **Dashboard**: current balance, total income and total expenses in animated cards, a savings-rate card, a "Check Balance" popup, a spending donut chart and recent transactions.
+- **Add transactions**: income or expense with amount, category, date and description. Invalid amounts (zero, negative, empty) are rejected with a message.
+- **Transaction history**: search, filter by type and category, green (income) and red (expense) badges, delete, and CSV download.
+- **AI Finance Agent**: chat in plain language.
+  - "Add 500 rs for groceries today" records the expense.
+  - "How much did I spend on food this month?" answers from your data.
+  - "Give me savings advice" gives tips based on your own spending.
+- **Analytics**: spending by category (donut and bars) and monthly income vs. expense cash flow.
+- **Dark / light mode**, responsive layout for phones and desktops.
+- **Sample data** button for quick demos and **Reset** to clear everything.
+
+## Getting started
+
+1. Download `index.html`.
+2. Double-click it to open it in any modern browser (Chrome, Edge, Firefox, Safari).
+
+You can also paste the whole file into an online editor such as CodePen or JSFiddle.
+
+Tip: go to **History → Load sample data** to see the app populated.
+
+## Using the AI agent
+
+The agent has two modes, shown by a badge on the AI Agent tab.
+
+| Mode | When | What it does |
+|------|------|--------------|
+| **Offline** (default) | No API key entered | A built-in rule-based assistant. It understands simple commands such as adding a transaction, asking totals by category or period, checking balance and getting savings advice. |
+| **Gemini** | API key entered | Sends your message and a summary of your finances to the Google Gemini API for fuller, conversational answers, and can add transactions for you. |
+
+### Enabling Gemini (optional)
+
+1. Create a free key in [Google AI Studio](https://aistudio.google.com/).
+2. Open the **AI Agent** tab, expand **Gemini API settings** and paste the key.
+3. The default model is `gemini-2.5-flash`. If it is unavailable, the app tries other Gemini models, then falls back to the offline assistant, so the chat never breaks.
+
+Example prompts:
+
+- `Add 500 rs for groceries today`
+- `Spent 250 on uber yesterday`
+- `Received 8000 freelance payment`
+- `How much did I spend on food this month?`
+- `What's my balance?`
+- `Give me savings advice based on my spending`
+
+## Data and privacy
+
+- All transactions are stored in your browser's `localStorage`. Nothing is uploaded anywhere.
+- Data stays on that browser and device. Clearing site data or using a private window removes it. Use **Download CSV** to keep a backup.
+- Some online editors block `localStorage`; the app still runs but data resets on refresh.
+- In Gemini mode, a summary of your transactions (totals, categories and your 30 most recent entries) is sent to Google together with your message.
+- The API key is saved in your browser only. Do not share the file or browser profile with a key filled in, and use a personal key.
+
+## Project structure
+
+```
+index.html   # the whole app: HTML + CSS + JavaScript
+README.md    # this file
+```
+
+Inside `index.html` the code is organised in labelled sections: constants, helpers, data layer, rendering, offline assistant, Gemini call, chat, event handlers and initialisation.
+
+## Technology
+
+- HTML5, CSS3 (custom properties, grid, flexbox, animations)
+- Vanilla JavaScript (no frameworks or build step)
+- Charts drawn with inline SVG and CSS
+- Google Gemini REST API via `fetch` (optional)
+
+## Customising
+
+- **Categories**: edit the `CATS` object near the top of the script.
+- **Offline assistant keywords** (for example, mapping "uber" to Travel): edit the `KW` object.
+- **Colours and theme**: change the CSS variables under `:root` and `body.dark`.
+- **Currency**: the `inr()` helper formats amounts as Indian rupees; change it to use another currency.
+
+## Limitations
+
+- Single user, single device; there is no sync or login.
+- The offline assistant only understands simple phrasing.
+- The cash-flow chart shows the most recent six months.
+
+## License
+
+Free to use and modify for personal and educational projects.
