@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FinTrack Pro</title>
+<!-- FinTrack Pro: single-file finance tracker. Pure HTML + CSS + JavaScript, no libraries, no install.
+     Open this file in any browser. Data is saved in the browser (localStorage). -->
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--shadow:0 8px 24px rgba(15,23,42,.08);
+--grad:linear-gradient(135deg,#6c3fd1,#3b5bdb);--green:#12b76a;--red:#f04438}
+body.dark{--bg:#0b1220;--card:#131c2e;--text:#e6edf7;--muted:#94a3b8;--border:#1f2a44;--shadow:0 8px 24px rgba(0,0,0,.45)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;transition:background .3s}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.brand{font-size:22px;font-weight:800}.brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero{background:linear-gradient(120deg,#0f172a,#1e3a8a 50%,#5b2bb8);color:#fff;border-radius:24px;padding:26px 30px;
+box-shadow:0 18px 40px rgba(30,58,138,.35);margin-bottom:18px;animation:up .6s ease both}
+.hero small{opacity:.75;letter-spacing:1.2px;text-transform:uppercase;font-weight:600;font-size:12px}
+.hero-bal{font-size:42px;font-weight:800;letter-spacing:-1px;margin:4px 0}.hero-sub{opacity:.85;font-size:13px}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.tabs{display:flex;gap:6px;background:var(--card);padding:6px;border-radius:16px;border:1px solid var(--border);
+box-shadow:var(--shadow);margin-bottom:18px;overflow-x:auto}
+.tabs button{flex:1;white-space:nowrap;border:0;background:none;color:var(--muted);font-weight:600;padding:11px 16px;border-radius:12px;cursor:pointer;font-size:14px}
+.tabs button.on{background:var(--grad);color:#fff}
+.pane{display:none}.pane.on{display:block;animation:up .4s ease both}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:var(--shadow);
+transition:transform .25s}.card:hover{transform:translateY(-3px)}
+.stat{display:flex;gap:14px;align-items:center}
+.ico{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:23px;background:rgba(108,63,209,.13)}
+.lbl{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.val{font-size:25px;font-weight:800}.sub{font-size:12px;color:var(--muted)}
+.green{color:var(--green)}.red{color:var(--red)}
+h3{margin:6px 0 12px;font-size:18px}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:14px;transition:.2s}
+.btn:hover{border-color:#6c3fd1;color:#6c3fd1}
+.btn.primary{background:var(--grad);color:#fff;border:0;box-shadow:0 8px 20px rgba(91,43,184,.35)}.btn.primary:hover{color:#fff;opacity:.92}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+input,select{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 5px;text-transform:uppercase;letter-spacing:.6px}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.seg{display:flex;gap:8px;margin-bottom:6px}.seg button{flex:1}.seg .btn.on{background:var(--grad);color:#fff;border:0}
+.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow-x:auto;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:13px 16px;font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:12px 16px;border-bottom:1px solid var(--border)}tr:last-child td{border-bottom:0}tr:hover td{background:rgba(108,63,209,.05)}
+.av{display:inline-flex;width:34px;height:34px;border-radius:11px;align-items:center;justify-content:center;background:rgba(108,63,209,.1);margin-right:10px;vertical-align:middle}
+.badge{display:inline-block;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:700}
+.b-inc{background:rgba(18,183,106,.15);color:var(--green)}.b-exp{background:rgba(240,68,56,.14);color:var(--red)}
+.b-cat{background:rgba(108,63,209,.12);color:#8b5cf6}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.mask{font-size:32px;letter-spacing:4px;color:var(--muted);margin:8px 0}
+.chat{height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px}
+.msg{max-width:82%;padding:11px 15px;border-radius:16px;font-size:14px;line-height:1.5}
+.msg.user{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--bg);border:1px solid var(--border);border-bottom-left-radius:4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.chips .btn{font-size:13px;padding:7px 12px}
+.send{display:flex;gap:8px}
+.bar-row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.bar-row .n{width:110px}
+.bar{flex:1;background:var(--bg);border-radius:8px;height:14px;overflow:hidden}.bar i{display:block;height:100%;border-radius:8px}
+.cf{display:flex;align-items:flex-end;gap:18px;height:200px;padding:10px 4px;border-bottom:1px solid var(--border);overflow-x:auto}
+.cf .g{flex:1;min-width:60px;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.cf .pair{display:flex;gap:4px;align-items:flex-end;height:170px}.cf .pair i{width:20px;border-radius:6px 6px 0 0;display:block;min-height:2px}
+.cf small{color:var(--muted);font-size:11px;margin-top:6px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:10px}.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.donut-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center}
+.leg li{list-style:none;font-size:13px;margin:5px 0}.leg{padding:0;margin:0}.leg b{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}.box{background:var(--card);border-radius:24px;padding:28px;max-width:380px;width:100%;text-align:center;animation:up .3s ease both}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#0f172a;color:#fff;padding:12px 20px;
+border-radius:14px;font-size:14px;opacity:0;transition:.3s;z-index:60}#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+details{margin-top:12px;font-size:13px;color:var(--muted)}summary{cursor:pointer;font-weight:600}
+.warn{color:var(--red);font-size:13px;min-height:18px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">💳 <span>FinTrack Pro</span></div>
+    <button class="btn" id="themeBtn">🌙 Dark</button>
+  </header>
+
+  <div class="hero">
+    <small>Current balance</small>
+    <div class="hero-bal" id="heroBal"></div>
+    <div class="hero-sub" id="heroSub"></div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="dash" class="on">🏠 Dashboard</button>
+    <button data-tab="add">➕ Add</button>
+    <button data-tab="hist">📜 History</button>
+    <button data-tab="agent">🤖 AI Agent</button>
+    <button data-tab="ana">📊 Analytics</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section class="pane on" id="dash">
+    <div class="grid" id="statCards"></div>
+    <div class="grid">
+      <div class="card" style="text-align:center">
+        <h3>🔒 Quick balance check</h3>
+        <div class="mask">₹ • • • • •</div>
+        <button class="btn primary" id="checkBal">Check Balance</button>
+        <div class="sub" style="margin-top:12px" id="saveRate"></div>
+      </div>
+      <div class="card"><h3>This month's spending</h3><div id="dashDonut"></div></div>
+    </div>
+    <h3>Recent transactions</h3>
+    <div class="tbl-wrap" id="recent"></div>
+  </section>
+
+  <!-- ADD -->
+  <section class="pane" id="add">
+    <div class="card">
+      <h3>New transaction</h3>
+      <div class="seg" id="typeSeg">
+        <button class="btn on" data-type="Expense">▼ Expense</button>
+        <button class="btn" data-type="Income">▲ Income</button>
+      </div>
+      <div class="row">
+        <div><label>Amount (₹)</label><input id="fAmt" type="number" min="0" step="0.01" placeholder="0.00"></div>
+        <div><label>Category</label><select id="fCat"></select></div>
+        <div><label>Date</label><input id="fDate" type="date"></div>
+        <div><label>Description</label><input id="fDesc" maxlength="120" placeholder="e.g. Dinner with friends"></div>
+      </div>
+      <div class="warn" id="fWarn"></div>
+      <button class="btn primary" id="fSave" style="margin-top:8px">Save transaction</button>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="pane" id="hist">
+    <div class="card" style="margin-bottom:14px">
+      <div class="row">
+        <div><label>Search</label><input id="hSearch" placeholder="🔍 description or category"></div>
+        <div><label>Type</label><select id="hType"><option value="">All</option><option>Income</option><option>Expense</option></select></div>
+        <div><label>Category</label><select id="hCat"></select></div>
+      </div>
+      <div class="sub" id="hInfo" style="margin-top:10px"></div>
+    </div>
+    <div class="tbl-wrap" id="histTbl"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn" id="csvBtn">⬇️ Download CSV</button>
+      <button class="btn" id="sampleBtn">🎲 Load sample data</button>
+      <button class="btn danger" id="resetBtn">🧹 Reset all data</button>
+    </div>
+  </section>
+
+  <!-- AI AGENT -->
+  <section class="pane" id="agent">
+    <div class="card">
+      <h3>🤖 AI Finance Agent <span class="badge" id="modeBadge"></span></h3>
+      <div class="chat" id="chat"></div>
+      <div class="chips">
+        <button class="btn" data-q="Add 500 rs for groceries today">➕ Add 500 rs for groceries</button>
+        <button class="btn" data-q="How much did I spend on food this month?">🍔 Food spend this month?</button>
+        <button class="btn" data-q="Give me savings advice based on my spending">💡 Savings advice</button>
+      </div>
+      <div class="send"><input id="chatIn" placeholder="Ask me anything about your money…"><button class="btn primary" id="chatSend">Send</button></div>
+      <details>
+        <summary>⚙️ Gemini API settings (optional)</summary>
+        <label>API key (stored only in this browser)</label><input id="apiKey" type="password" placeholder="Paste Gemini API key">
+        <label>Model</label><input id="model" value="gemini-2.5-flash">
+        <div class="sub" style="margin-top:6px">Without a key, a built-in offline assistant answers simple commands.</div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ANALYTICS -->
+  <section class="pane" id="ana">
+    <div class="grid">
+      <div class="card"><h3>Spending by category</h3><div id="anaDonut"></div></div>
+      <div class="card"><h3>Top categories</h3><div id="anaBars"></div></div>
+    </div>
+    <div class="card"><h3>Monthly cash flow</h3><div id="anaCash"></div></div>
+  </section>
+</div>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ===================== Constants ===================== */
+const CATS = {
+  Expense: ["Food","Groceries","Rent","Travel","Shopping","Bills","Entertainment","Health","Education","Other"],
+  Income: ["Salary","Freelance","Investments","Gift","Other Income"]
+};
+const EMOJI = {Food:"🍔",Groceries:"🛒",Rent:"🏠",Travel:"🚕",Shopping:"🛍️",Bills:"💡",Entertainment:"🎬",Health:"💊",
+  Education:"📚",Other:"🧾",Salary:"💼",Freelance:"🧑‍💻",Investments:"📈",Gift:"🎁","Other Income":"💰"};
+const COLORS = ["#6c3fd1","#3b5bdb","#12b76a","#f79009","#f04438","#06aed4","#ee46bc","#84cc16","#8b5cf6","#64748b"];
+// keyword -> category, used by the offline assistant (matched at the start of a word)
+const KW = {
+  Groceries:["grocer","vegetable","supermarket","bigbasket","blinkit","zepto","milk","fruit"],
+  Food:["food","restaurant","lunch","dinner","breakfast","swiggy","zomato","snack","coffee","chai","pizza","burger","cafe","meal"],
+  Rent:["rent","landlord"],
+  Travel:["travel","uber","cab","taxi","bus","train","metro","fuel","petrol","diesel","flight","trip"],
+  Shopping:["shopping","clothes","shirt","shoes","amazon","flipkart","myntra"],
+  Bills:["bill","electricity","recharge","wifi","internet","water","insurance","emi"],
+  Entertainment:["movie","netflix","spotify","game","concert","party"],
+  Health:["doctor","medicine","medical","pharmacy","hospital","gym"],
+  Education:["book","course","tuition","college","fees","exam"],
+  Salary:["salary","paycheck","stipend","payday"],
+  Freelance:["freelance","client","gig"],
+  Investments:["dividend","interest","investment","stock"],
+  Gift:["gift"]
+};
+const INCOME_RE = /salary|received|earned|income|credited|stipend|freelance|dividend|bonus|refund|payday|deposit/;
+
+/* ===================== Helpers ===================== */
+const $ = id => document.getElementById(id);
+const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v === null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const today = () => iso(new Date());
+const inr = n => (n < 0 ? "-" : "") + "₹" + Math.abs(Number(n) || 0).toLocaleString("en-IN", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 2500); }
+function parseDate(v) {
+  const t = String(v || "").toLowerCase().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  if (t === "yesterday") { const d = new Date(); d.setDate(d.getDate() - 1); return iso(d); }
+  return today();
+}
+function guessCat(text) {
+  const t = String(text || "").toLowerCase();
+  for (const [c, words] of Object.entries(KW)) if (words.some(w => new RegExp("\\b" + w).test(t))) return c;
+  return null;
+}
+function normCat(c, type) {
+  const list = CATS[type], want = String(c || "").trim().toLowerCase();
+  return list.find(x => x.toLowerCase() === want) || (list.includes(guessCat(want)) ? guessCat(want) : list[list.length - 1]);
+}
+
+/* ===================== Data ===================== */
+let tx = load("ft_tx", []);
+if (!Array.isArray(tx)) tx = [];
+const persist = () => save("ft_tx", tx);
+
+function addTx(date, type, cat, amount, desc) {
+  const amt = parseFloat(amount);
+  if (!isFinite(amt) || amt <= 0) return {ok: false, msg: "Enter an amount greater than 0."};
+  if (amt > 1e9) return {ok: false, msg: "Amount is unrealistically large."};
+  if (type !== "Income" && type !== "Expense") return {ok: false, msg: "Invalid type."};
+  const category = normCat(cat, type);
+  tx.push({id: Date.now() + Math.random(), date: parseDate(date), type, category,
+           amount: Math.round(amt * 100) / 100, desc: String(desc || "").trim().slice(0, 120) || category});
+  persist();
+  return {ok: true, msg: `${type} of ${inr(amt)} (${category}) saved.`};
+}
+const sorted = () => tx.slice().sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+const sum = list => list.reduce((s, t) => s + t.amount, 0);
+
+function stats() {
+  const m = today().slice(0, 7), inc = sum(tx.filter(t => t.type === "Income")), exp = sum(tx.filter(t => t.type === "Expense"));
+  const mi = sum(tx.filter(t => t.type === "Income" && t.date.startsWith(m)));
+  const me = sum(tx.filter(t => t.type === "Expense" && t.date.startsWith(m)));
+  return {inc, exp, bal: inc - exp, mi, me, rate: mi > 0 ? (mi - me) / mi * 100 : 0, n: tx.length};
+}
+function byCategory(list) {
+  const o = {};
+  list.filter(t => t.type === "Expense").forEach(t => o[t.category] = (o[t.category] || 0) + t.amount);
+  return Object.entries(o).sort((a, b) => b[1] - a[1]);
+}
+function loadSample() {
+  let seed = 42; const rnd = (a, b) => { seed = (seed * 16807) % 2147483647; return a + seed % (b - a + 1); };
+  const now = new Date();
+  for (let m = 0; m < 3; m++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    addTx(iso(d), "Income", "Salary", 62000, "Monthly salary");
+    d.setDate(3); addTx(iso(d), "Expense", "Rent", 14500, "House rent");
+  }
+  const kinds = [["Food",120,650],["Groceries",300,1800],["Travel",80,900],["Shopping",500,3500],["Bills",250,2200],["Entertainment",150,900],["Health",200,1500]];
+  for (let i = 0; i < 40; i++) {
+    const k = kinds[rnd(0, kinds.length - 1)], d = new Date(); d.setDate(d.getDate() - rnd(0, 60));
+    addTx(iso(d), "Expense", k[0], rnd(k[1], k[2]), k[0] + " expense");
+  }
+  tx = tx.filter(t => t.date <= today()); persist();
+}
+
+/* ===================== Rendering ===================== */
+function rowsHtml(list, del) {
+  if (!list.length) return '<div class="empty"><div style="font-size:40px">🪙</div>No transactions to show yet.</div>';
+  const body = list.map(t => {
+    const inc = t.type === "Income";
+    return `<tr><td>${t.date}</td><td><span class="av">${EMOJI[t.category] || "🧾"}</span>${esc(t.desc)}</td>
+      <td><span class="badge b-cat">${esc(t.category)}</span></td>
+      <td><span class="badge ${inc ? "b-inc" : "b-exp"}">${inc ? "▲ Income" : "▼ Expense"}</span></td>
+      <td style="text-align:right;font-weight:800" class="${inc ? "green" : "red"}">${inc ? "+" : "-"}${inr(t.amount)}</td>
+      ${del ? `<td><button class="btn danger" data-del="${t.id}" style="padding:5px 10px">🗑️</button></td>` : ""}</tr>`;
+  }).join("");
+  return `<table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right">Amount</th>${del ? "<th></th>" : ""}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function donut(list) {
+  if (!list.length) return '<div class="empty">No spending to chart yet.</div>';
+  const total = list.reduce((s, x) => s + x[1], 0), R = 70, C = 2 * Math.PI * R;
+  let off = 0, arcs = "";
+  list.forEach((x, i) => {
+    const len = x[1] / total * C;
+    arcs += `<circle r="${R}" cx="100" cy="100" fill="none" stroke="${COLORS[i % 10]}" stroke-width="28" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"/>`;
+    off += len;
+  });
+  const leg = list.map((x, i) => `<li><b style="background:${COLORS[i % 10]}"></b>${esc(x[0])} · ${inr(x[1])} (${Math.round(x[1] / total * 100)}%)</li>`).join("");
+  return `<div class="donut-wrap"><svg width="200" height="200" viewBox="0 0 200 200">${arcs}
+    <text x="100" y="98" text-anchor="middle" fill="currentColor" font-weight="800" font-size="14">${inr(total).replace(/\.\d+$/, "")}</text>
+    <text x="100" y="116" text-anchor="middle" fill="currentColor" font-size="11" opacity=".6">spent</text></svg><ul class="leg">${leg}</ul></div>`;
+}
+function bars(list) {
+  if (!list.length) return '<div class="empty">No expenses yet.</div>';
+  const max = list[0][1];
+  return list.map((x, i) => `<div class="bar-row"><div class="n">${EMOJI[x[0]] || ""} ${esc(x[0])}</div>
+    <div class="bar"><i style="width:${x[1] / max * 100}%;background:${COLORS[i % 10]}"></i></div><div>${inr(x[1])}</div></div>`).join("");
+}
+function cashflow() {
+  const months = {};
+  tx.forEach(t => { const m = t.date.slice(0, 7); months[m] = months[m] || {i: 0, e: 0}; months[m][t.type === "Income" ? "i" : "e"] += t.amount; });
+  const keys = Object.keys(months).sort().slice(-6);
+  if (!keys.length) return '<div class="empty">Add transactions to see cash flow.</div>';
+  const max = Math.max(...keys.map(k => Math.max(months[k].i, months[k].e))) || 1;
+  const cols = keys.map(k => `<div class="g"><div class="pair">
+    <i style="height:${months[k].i / max * 100}%;background:var(--green)" title="Income ${inr(months[k].i)}"></i>
+    <i style="height:${months[k].e / max * 100}%;background:var(--red)" title="Expense ${inr(months[k].e)}"></i></div><small>${k}</small></div>`).join("");
+  return `<div class="cf">${cols}</div><div class="legend"><span><b style="background:var(--green)"></b>Income</span><span><b style="background:var(--red)"></b>Expense</span></div>`;
+}
+function renderHistory() {
+  const q = $("hSearch").value.trim().toLowerCase(), ty = $("hType").value, ct = $("hCat").value;
+  const list = sorted().filter(t => (!q || (t.desc + " " + t.category).toLowerCase().includes(q)) && (!ty || t.type === ty) && (!ct || t.category === ct));
+  const inc = sum(list.filter(t => t.type === "Income")), exp = sum(list.filter(t => t.type === "Expense"));
+  $("hInfo").textContent = `${list.length} result(s) · Income ${inr(inc)} · Expenses ${inr(exp)} · Net ${inr(inc - exp)}`;
+  $("histTbl").innerHTML = rowsHtml(list.slice(0, 300), true);
+  return list;
+}
+function render() {
+  const s = stats(), mo = today().slice(0, 7);
+  $("heroBal").textContent = inr(s.bal);
+  $("heroSub").textContent = `${s.me > s.mi ? "▼" : "▲"} ${inr(Math.abs(s.mi - s.me))} net this month · ${s.n} transactions tracked`;
+  $("statCards").innerHTML = [
+    ["💰", "Current balance", inr(s.bal), "Income minus expenses", s.bal >= 0 ? "green" : "red"],
+    ["📥", "Total income", inr(s.inc), inr(s.mi) + " this month", "green"],
+    ["📤", "Total expenses", inr(s.exp), inr(s.me) + " this month", "red"]
+  ].map(c => `<div class="card stat"><div class="ico">${c[0]}</div><div><div class="lbl">${c[1]}</div><div class="val ${c[4]}">${c[2]}</div><div class="sub">${c[3]}</div></div></div>`).join("");
+  $("saveRate").textContent = `🎯 Savings rate this month: ${s.rate.toFixed(0)}%`;
+  $("dashDonut").innerHTML = donut(byCategory(tx.filter(t => t.date.startsWith(mo))));
+  $("recent").innerHTML = rowsHtml(sorted().slice(0, 6), false);
+  $("anaDonut").innerHTML = donut(byCategory(tx));
+  $("anaBars").innerHTML = bars(byCategory(tx));
+  $("anaCash").innerHTML = cashflow();
+  const all = CATS.Expense.concat(CATS.Income), cur = $("hCat").value;
+  $("hCat").innerHTML = '<option value="">All</option>' + all.map(c => `<option>${c}</option>`).join("");
+  $("hCat").value = cur;
+  renderHistory();
+}
+
+/* ===================== Offline assistant ===================== */
+function periodOf(l, list) {
+  const t = today(), d = new Date();
+  if (/today/.test(l)) return [list.filter(x => x.date === t), "today"];
+  if (/yesterday/.test(l)) { d.setDate(d.getDate() - 1); return [list.filter(x => x.date === iso(d)), "yesterday"]; }
+  if (/last month/.test(l)) { const p = new Date(d.getFullYear(), d.getMonth() - 1, 1); return [list.filter(x => x.date.startsWith(iso(p).slice(0, 7))), "last month"]; }
+  if (/week/.test(l)) { d.setDate(d.getDate() - 7); return [list.filter(x => x.date >= iso(d)), "in the last 7 days"]; }
+  if (/month/.test(l)) return [list.filter(x => x.date.startsWith(t.slice(0, 7))), "this month"];
+  if (/year/.test(l)) return [list.filter(x => x.date.startsWith(t.slice(0, 4))), "this year"];
+  return [list, "overall"];
+}
+function advice() {
+  if (!tx.length) return "No transactions yet. Add some income and expenses and I'll give tailored advice.";
+  const s = stats(), cats = byCategory(tx.filter(t => t.date.startsWith(today().slice(0, 7)))), out = [];
+  out.push(s.mi > 0 ? `• Your savings rate this month is **${s.rate.toFixed(0)}%** (${s.rate >= 20 ? "healthy 👍" : "below the 20% guideline ⚠️"}).`
+                    : "• No income recorded this month yet.");
+  if (cats.length) {
+    out.push(`• Your biggest expense is **${cats[0][0]}** at ${inr(cats[0][1])}.`);
+    const disc = cats.filter(c => ["Food","Shopping","Entertainment","Travel"].includes(c[0])).reduce((a, c) => a + c[1], 0);
+    if (disc) out.push(`• Cutting discretionary spending by 15% would save about **${inr(disc * 0.15)}** a month.`);
+  }
+  out.push("• Try the 50/30/20 rule: 50% needs, 30% wants, 20% savings. Automate savings on payday.");
+  return out.join("\n");
+}
+function localAgent(msg) {
+  const l = msg.toLowerCase().trim(), clean = l.replace(/\d{4}-\d{2}-\d{2}/g, " ");
+  const am = clean.match(/(\d[\d,]*(?:\.\d+)?)/), dm = l.match(/\d{4}-\d{2}-\d{2}/);
+  const q = /\?|^(how|what|show|give|tell|can|which|where|is|am|do)\b/.test(l);
+  const verbs = /\b(add|spent|spend|paid|pay|bought|received|got|earned|credited|record|log|gave)\b/;
+  if (/advice|tips|suggest|saving/.test(l) && !(am && verbs.test(l) && !q)) return {reply: "Here's my take based on your data:\n" + advice(), txs: []};
+  if (/balance/.test(l) && q) { const s = stats(); return {reply: `Your balance is **${inr(s.bal)}** (income ${inr(s.inc)} − expenses ${inr(s.exp)}).`, txs: []}; }
+  if (q && /spend|spent|expense|earn|income|received|cost/.test(l)) {
+    const wantInc = /earn|income|received|salary/.test(l), cat = guessCat(l);
+    const [list, label] = periodOf(l, tx);
+    const sub = list.filter(t => t.type === (wantInc ? "Income" : "Expense") && (!cat || t.category === cat));
+    return {reply: `You ${wantInc ? "earned" : "spent"} **${inr(sum(sub))}**${cat ? " on **" + cat + "**" : ""} ${label} across ${sub.length} transaction(s).`, txs: []};
+  }
+  if (am && verbs.test(l)) {
+    const type = INCOME_RE.test(l) ? "Income" : "Expense", cat = normCat(guessCat(l) || "", type);
+    const dmatch = clean.match(/\b(?:for|on|from)\s+(.+?)(?:\s+(?:today|yesterday)|$)/);
+    const desc = dmatch ? dmatch[1].replace(/\b\w/g, c => c.toUpperCase()) : cat;
+    return {reply: `Got it! Recording that ${type.toLowerCase()}.`, txs: [{type, category: cat, amount: parseFloat(am[1].replace(/,/g, "")),
+      date: dm ? dm[0] : /yesterday/.test(l) ? "yesterday" : "today", description: desc}]};
+  }
+  return {reply: "I can help with things like:\n• Add 500 rs for groceries today\n• How much did I spend on food this month?\n• What's my balance?\n• Give me savings advice\n(Add a Gemini key under settings for fuller answers.)", txs: []};
+}
+
+/* ===================== Gemini (plain fetch, no SDK) ===================== */
+const SYS = `You are FinTrack AI, a friendly personal-finance assistant. Expense categories: ${CATS.Expense.join(", ")}. Income categories: ${CATS.Income.join(", ")}.
+Reply with ONE JSON object only: {"reply":"short markdown answer using the rupee sign","transactions":[{"type":"Expense"|"Income","category":"valid category","amount":number,"date":"YYYY-MM-DD","description":"short"}]}.
+If the user asks to add/record money, put each item in "transactions" and confirm in "reply" (default date = today). For questions or advice, leave "transactions" empty and answer ONLY from the snapshot; never invent numbers.`;
+function snapshot() {
+  const s = stats(), cats = byCategory(tx);
+  return `Today: ${today()}. Currency INR. Balance ${s.bal.toFixed(2)}, income ${s.inc.toFixed(2)}, expenses ${s.exp.toFixed(2)}.
+This month income ${s.mi.toFixed(2)}, expenses ${s.me.toFixed(2)}, savings rate ${s.rate.toFixed(1)}%.
+Expenses by category: ${cats.map(c => c[0] + "=" + c[1].toFixed(0)).join(", ") || "none"}.
+Recent transactions:\n${sorted().slice(0, 30).map(t => `${t.date} | ${t.type} | ${t.category} | ${t.amount} | ${t.desc}`).join("\n") || "none"}`;
+}
+async function geminiAgent(msg, key, model) {
+  const models = [model, "gemini-2.5-flash", "gemini-2.0-flash"].filter((m, i, a) => m && a.indexOf(m) === i);
+  let err = "";
+  for (const m of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(key)}`, {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({systemInstruction: {parts: [{text: SYS}]},
+          contents: [{role: "user", parts: [{text: "SNAPSHOT\n" + snapshot() + "\n\nUSER MESSAGE\n" + msg}]}],
+          generationConfig: {temperature: 0.3, responseMimeType: "application/json"}})
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error((j.error && j.error.message) || "HTTP " + r.status);
+      const text = (j.candidates && j.candidates[0].content.parts.map(p => p.text).join("")) || "";
+      let d; try { d = JSON.parse(text.replace(/^```(?:json)?|```$/gm, "").trim()); } catch (e) { return {reply: text || "No response.", txs: []}; }
+      return {reply: String(d.reply || ""), txs: Array.isArray(d.transactions) ? d.transactions : []};
+    } catch (e) { err = e.message; }
+  }
+  throw new Error(err);
+}
+
+/* ===================== Chat ===================== */
+function bubble(role, text) {
+  const c = $("chat"); c.insertAdjacentHTML("beforeend", `<div class="msg ${role}">${md(text)}</div>`); c.scrollTop = c.scrollHeight;
+}
+function updateMode() {
+  const b = $("modeBadge"), live = $("apiKey").value.trim().length > 0;
+  b.textContent = live ? "● Gemini mode" : "● Offline mode"; b.className = "badge " + (live ? "b-inc" : "b-cat");
+}
+let busy = false;
+async function sendChat(text) {
+  text = String(text || "").trim(); if (!text || busy) return;
+  busy = true; $("chatIn").value = ""; bubble("user", text);
+  const key = $("apiKey").value.trim(); let res, note = "";
+  if (key) { try { res = await geminiAgent(text, key, $("model").value.trim()); } catch (e) { note = `\n(⚠️ Gemini unavailable: ${String(e.message).slice(0, 90)}. Used offline assistant.)`; } }
+  if (!res) res = localAgent(text);
+  const notes = res.txs.slice(0, 10).map(t => {
+    const r = addTx(parseDate(t.date), /income/i.test(t.type) ? "Income" : "Expense", t.category, t.amount, t.description);
+    return (r.ok ? "✅ " : "⚠️ ") + r.msg;
+  });
+  bubble("bot", (res.reply || "Done.") + (notes.length ? "\n" + notes.join("\n") : "") + note);
+  if (notes.length) { render(); toast("Transaction added by AI agent"); }
+  busy = false;
+}
+
+/* ===================== Events ===================== */
+let curType = "Expense";
+function fillCats() { $("fCat").innerHTML = CATS[curType].map(c => `<option>${c}</option>`).join(""); }
+$("tabs").onclick = e => {
+  const t = e.target.closest("button"); if (!t) return;
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b === t));
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === t.dataset.tab));
+};
+$("typeSeg").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  curType = b.dataset.type; document.querySelectorAll("#typeSeg .btn").forEach(x => x.classList.toggle("on", x === b)); fillCats();
+};
+$("fSave").onclick = () => {
+  const r = addTx($("fDate").value || today(), curType, $("fCat").value, $("fAmt").value, $("fDesc").value);
+  $("fWarn").textContent = r.ok ? "" : r.msg;
+  if (r.ok) { $("fAmt").value = ""; $("fDesc").value = ""; toast("✅ " + r.msg); render(); }
+};
+["hSearch", "hType", "hCat"].forEach(id => { $(id).oninput = renderHistory; $(id).onchange = renderHistory; });
+$("histTbl").onclick = e => {
+  const b = e.target.closest("[data-del]"); if (!b) return;
+  tx = tx.filter(t => String(t.id) !== b.dataset.del); persist(); render(); toast("🗑️ Transaction deleted");
+};
+$("csvBtn").onclick = () => {
+  const rows = [["date", "type", "category", "amount", "description"]].concat(renderHistory().map(t => [t.date, t.type, t.category, t.amount, t.desc]));
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"})); a.download = "transactions.csv"; a.click();
+};
+$("sampleBtn").onclick = () => { loadSample(); render(); toast("🎲 Sample data loaded"); };
+$("resetBtn").onclick = () => { if (confirm("Delete ALL transactions? This cannot be undone.")) { tx = []; persist(); render(); toast("🧹 All data cleared"); } };
+$("checkBal").onclick = () => {
+  const s = stats();
+  $("modalBox").innerHTML = `<div class="lbl">Available balance</div><div class="val ${s.bal >= 0 ? "green" : "red"}" style="font-size:40px;margin:8px 0">${inr(s.bal)}</div>
+    <div class="sub">${s.n} transactions · Income ${inr(s.inc)} · Expenses ${inr(s.exp)}</div>
+    <button class="btn primary" style="margin-top:18px" id="closeModal">Close</button>`;
+  $("modal").classList.add("on"); $("closeModal").onclick = () => $("modal").classList.remove("on");
+};
+$("modal").onclick = e => { if (e.target.id === "modal") $("modal").classList.remove("on"); };
+$("chatSend").onclick = () => sendChat($("chatIn").value);
+$("chatIn").onkeydown = e => { if (e.key === "Enter") sendChat($("chatIn").value); };
+document.querySelector(".chips").onclick = e => { const b = e.target.closest("[data-q]"); if (b) sendChat(b.dataset.q); };
+$("apiKey").oninput = () => { save("ft_key", $("apiKey").value); updateMode(); };
+$("model").oninput = () => save("ft_model", $("model").value);
+$("themeBtn").onclick = () => {
+  const d = document.body.classList.toggle("dark"); save("ft_dark", d); $("themeBtn").textContent = d ? "☀️ Light" : "🌙 Dark";
+};
+
+/* ===================== Init ===================== */
+$("fDate").value = today();
+$("apiKey").value = load("ft_key", ""); $("model").value = load("ft_model", "gemini-2.5-flash");
+if (load("ft_dark", false)) { document.body.classList.add("dark"); $("themeBtn").textContent = "☀️ Light"; }
+fillCats(); updateMode(); render();
+bubble("bot", "Hi! I'm your finance agent 👋 Try “Add 500 rs for groceries today”, “How much did I spend on food this month?” or “Give me savings advice”.");
+if (!tx.length) toast("Tip: History → Load sample data for a quick demo");
+</script>
+</body>
+</html>
